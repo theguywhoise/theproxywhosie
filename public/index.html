@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>theproxywhoise | Gateway</title>
+    <!-- Importing the global Ultraviolet core scripts from a CDN mirror -->
+    <script src="https://jsdelivr.net"></script>
+    <style>
+        :root {
+            --bg-color: #0b0d19;
+            --panel-color: #16192b;
+            --accent-color: #6366f1;
+            --accent-hover: #4f46e5;
+            --text-color: #f3f4f6;
+            --muted-text: #9ca3af;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-image: radial-gradient(circle at 50% 50%, #1e1b4b 0%, var(--bg-color) 70%);
+        }
+
+        .container {
+            text-align: center;
+            width: 100%;
+            max-width: 650px;
+            padding: 20px;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 3.8rem;
+            font-weight: 800;
+            letter-spacing: -0.05em;
+            margin-bottom: 10px;
+            text-transform: lowercase;
+            background: linear-gradient(to right, #a5b4fc, var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p {
+            color: var(--muted-text);
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .search-box {
+            background-color: var(--panel-color);
+            border: 2px solid #2e3558;
+            border-radius: 50px;
+            padding: 8px 8px 8px 24px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+        }
+
+        .search-box input {
+            background: none;
+            border: none;
+            outline: none;
+            color: var(--text-color);
+            font-size: 1.1rem;
+            flex-grow: 1;
+            padding-right: 12px;
+        }
+
+        .search-box input::placeholder {
+            color: #4b5563;
+        }
+
+        .search-box button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            outline: none;
+            padding: 12px 28px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .search-box button:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .status {
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #4b5563;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>theproxywhoise</h1>
+        <p>Your portal to an open network.</p>
+        
+        <form id="proxy-form" class="search-box">
+            <input type="text" id="proxy-input" placeholder="Enter a URL or search freely..." autocomplete="off">
+            <button type="submit">Connect</button>
+        </form>
+
+        <div class="status" id="status-text">Network client ready.</div>
+    </div>
+
+    <script>
+        window.__uv$config = {
+            prefix: '/service/',
+            bare: 'https://stellar.wtf', 
+            encodeUrl: function(url) {
+                if (!url) return url;
+                return encodeURIComponent(url.split('').map((char, i) => i % 2 ? String.fromCharCode(char.charCodeAt(0) ^ 2) : char).join(''));
+            },
+            decodeUrl: function(url) {
+                if (!url) return url;
+                let [str, ...search] = url.split('?');
+                return decodeURIComponent(str).split('').map((char, i) => i % 2 ? String.fromCharCode(char.charCodeAt(0) ^ 2) : char).join('') + (search.length ? '?' + search.join('?') : '');
+            }
+        };
+
+        const form = document.getElementById('proxy-form');
+        const input = document.getElementById('proxy-input');
+        const status = document.getElementById('status-text');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            let targetUrl = input.value.trim();
+
+            if (!targetUrl) return;
+
+            status.textContent = "Connecting to theproxywhoise node network...";
+
+            if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+                if (targetUrl.includes('.') && !targetUrl.includes(' ')) {
+                    targetUrl = 'https://' + targetUrl;
+                } else {
+                    targetUrl = 'https://google.com' + encodeURIComponent(targetUrl);
+                }
+            }
+
+            try {
+                if ('serviceWorker' in navigator) {
+                    await navigator.serviceWorker.register('data:text/javascript;base64,' + btoa(`
+                        importScripts('https://jsdelivr.net');
+                        const sw = new UVServiceWorker();
+                        self.addEventListener('fetch', event => event.respondWith(sw.fetch(event)));
+                    `), {
+                        scope: __uv$config.prefix
+                    });
+                }
+
+                status.textContent = "Bypassing protocols...";
+                window.location.href = __uv$config.prefix + __uv$config.encodeUrl(targetUrl);
+
+            } catch (err) {
+                console.error(err);
+                status.style.color = "#ef4444";
+                status.textContent = "Error: Local file restrictions blocked ServiceWorker. Please run via a local or cloud web server.";
+            }
+        });
+    </script>
+</body>
+</html>
