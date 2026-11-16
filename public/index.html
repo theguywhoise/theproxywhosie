@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>theproxywhoise | Gateway</title>
-    <!-- Importing the global Ultraviolet core scripts from a CDN mirror -->
-    <script src="https://jsdelivr.net"></script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <script src="/scram/scramjet.all.js"></script>
+    <script src="/baremux/index.js"></script>
+    <script src="https://kit.fontawesome.com/1237c86ba0.js" crossorigin="anonymous"></script>
     <style>
         :root {
             --bg-color: #0b0d19;
@@ -32,7 +34,16 @@
             justify-content: center;
             align-items: center;
             overflow: hidden;
-            background-image: radial-gradient(circle at 50% 50%, #1e1b4b 0%, var(--bg-color) 70%);
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: -8px;
+            z-index: 0;
+            background: url('/bg.jpeg') center / cover no-repeat;
+            filter: blur(16px);
+            pointer-events: none;
         }
 
         .container {
@@ -43,15 +54,23 @@
             z-index: 10;
         }
 
+        .site-logo {
+            display: block;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            object-position: center;
+            margin: 0 auto 16px;
+        }
+
         h1 {
             font-size: 3.8rem;
             font-weight: 800;
             letter-spacing: -0.05em;
             margin-bottom: 10px;
             text-transform: lowercase;
-            background: linear-gradient(to right, #a5b4fc, var(--accent-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #fff;
         }
 
         p {
@@ -91,7 +110,7 @@
         }
 
         .search-box button {
-            background-color: var(--accent-color);
+            background-color: #2589D4;
             color: white;
             border: none;
             outline: none;
@@ -104,7 +123,7 @@
         }
 
         .search-box button:hover {
-            background-color: var(--accent-hover);
+            background-color: #1f74b4;
         }
 
         .status {
@@ -112,13 +131,232 @@
             font-size: 0.85rem;
             color: #4b5563;
         }
+
+        .browser-tabs {
+            position: fixed;
+            inset: 0 0 auto;
+            z-index: 30;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: #111827;
+            border-bottom: 1px solid #2e3558;
+        }
+
+        .browser-tabs[hidden] {
+            display: none;
+        }
+
+        .tab-list {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex: 1;
+            min-width: 0;
+            overflow-x: auto;
+        }
+
+        .tab {
+            display: flex;
+            align-items: center;
+            min-width: 0;
+            max-width: 220px;
+            border-radius: 8px;
+            background: #1b2032;
+        }
+
+        .tab.active {
+            background: #2e3558;
+        }
+
+        .tab-select,
+        .tab-close,
+        .new-tab {
+            color: var(--text-color);
+            border: 0;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .tab-select {
+            min-width: 0;
+            padding: 8px 10px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            text-align: left;
+        }
+
+        .tab-close {
+            padding: 6px 9px;
+            font-size: 1rem;
+        }
+
+        .new-tab {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            font-size: 1.4rem;
+        }
+
+        .tab-close:hover,
+        .new-tab:hover {
+            background: #363d5a;
+        }
+
+        .sj-frame {
+            position: fixed;
+            inset: 48px 0 0;
+            z-index: 20;
+            width: 100%;
+            height: calc(100% - 48px);
+            border: 0;
+            background: #fff;
+            display: none;
+        }
+
+        .sj-frame.active {
+            display: block;
+        }
+
+        .ai-widget {
+            position: fixed;
+            right: 24px;
+            bottom: 24px;
+            z-index: 100;
+            color: var(--text-color);
+        }
+
+        .ai-launcher {
+            width: 58px;
+            height: 58px;
+            display: grid;
+            place-items: center;
+            border: 1px solid rgba(147, 197, 253, 0.6);
+            border-radius: 50%;
+            background: linear-gradient(145deg, #2589d4, #4f46e5);
+            color: #fff;
+            box-shadow: 0 8px 26px rgba(0, 0, 0, 0.45);
+            cursor: pointer;
+        }
+
+        .ai-launcher:hover {
+            filter: brightness(1.12);
+        }
+
+        .ai-launcher-logo {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .ai-chat-panel {
+            position: absolute;
+            right: 0;
+            bottom: 72px;
+            display: flex;
+            flex-direction: column;
+            width: min(420px, calc(100vw - 32px));
+            height: min(660px, calc(100dvh - 112px));
+            overflow: hidden;
+            border: 1px solid #2e3558;
+            border-radius: 16px;
+            background: #060b14;
+            box-shadow: 0 18px 55px rgba(0, 0, 0, 0.58);
+        }
+
+        .ai-chat-panel[hidden] {
+            display: none;
+        }
+
+        .ai-panel-toolbar {
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 8px 12px;
+            border-bottom: 1px solid #243044;
+            background: #0b1220;
+        }
+
+        .ai-share-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .ai-share-control input {
+            accent-color: #38bdf8;
+        }
+
+        .ai-share-note {
+            overflow: hidden;
+            color: var(--muted-text);
+            font-size: 0.72rem;
+            font-weight: 400;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .ai-panel-close {
+            width: 32px;
+            height: 32px;
+            flex: 0 0 auto;
+            border: 0;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--text-color);
+            font-size: 1.4rem;
+            cursor: pointer;
+        }
+
+        .ai-panel-close:hover {
+            background: #1b2032;
+        }
+
+        .ai-chat-frame {
+            width: 100%;
+            min-height: 0;
+            flex: 1;
+            border: 0;
+            background: #020408;
+        }
+
+        @media (max-width: 520px) {
+            .ai-widget {
+                right: 16px;
+                bottom: 16px;
+            }
+
+            .ai-chat-panel {
+                position: fixed;
+                right: 12px;
+                bottom: 84px;
+                width: calc(100vw - 24px);
+                height: calc(100dvh - 108px);
+            }
+        }
     </style>
 </head>
 <body>
 
+    <div class="browser-tabs" id="browser-tabs" hidden>
+        <div class="tab-list" id="tab-list"></div>
+        <button class="new-tab" id="new-tab" type="button" aria-label="New tab">+</button>
+    </div>
+
     <div class="container">
+        <img class="site-logo" src="/logo.jpeg" alt="theproxywhoise logo">
         <h1>theproxywhoise</h1>
-        <p>Your portal to an open network.</p>
+        <p>Your portal to browser freedom.</p>
         
         <form id="proxy-form" class="search-box">
             <input type="text" id="proxy-input" placeholder="Enter a URL or search freely..." autocomplete="off">
@@ -128,59 +366,211 @@
         <div class="status" id="status-text">Network client ready.</div>
     </div>
 
-    <script>
-        window.__uv$config = {
-            prefix: '/service/',
-            bare: 'https://stellar.wtf', 
-            encodeUrl: function(url) {
-                if (!url) return url;
-                return encodeURIComponent(url.split('').map((char, i) => i % 2 ? String.fromCharCode(char.charCodeAt(0) ^ 2) : char).join(''));
-            },
-            decodeUrl: function(url) {
-                if (!url) return url;
-                let [str, ...search] = url.split('?');
-                return decodeURIComponent(str).split('').map((char, i) => i % 2 ? String.fromCharCode(char.charCodeAt(0) ^ 2) : char).join('') + (search.length ? '?' + search.join('?') : '');
-            }
-        };
+    <aside class="ai-widget" aria-label="The Void assistant">
+        <section class="ai-chat-panel" id="ai-chat-panel" aria-label="The Void chat" hidden>
+            <div class="ai-panel-toolbar">
+                <label class="ai-share-control" title="Send tab labels and site origins to Gemini for chat context">
+                    <input id="share-tabs" type="checkbox">
+                    <span>Share tabs with Gemini</span>
+                </label>
+                <span class="ai-share-note">Names and site origins only; no page contents.</span>
+                <button class="ai-panel-close" id="close-ai-chat" type="button" aria-label="Close chat">×</button>
+            </div>
+            <iframe
+                class="ai-chat-frame"
+                id="ai-chat-frame"
+                src="/thevoid.html?widget=1"
+                title="The Void chatbot"
+                loading="lazy"
+            ></iframe>
+        </section>
+        <button
+            class="ai-launcher"
+            id="open-ai-chat"
+            type="button"
+            aria-label="Open The Void chatbot"
+            aria-controls="ai-chat-panel"
+            aria-expanded="false"
+            title="Chat with The Void"
+        >
+            <img
+                class="ai-launcher-logo"
+                src="data:image/webp;base64,UklGRmgFAABXRUJQVlA4WAoAAAAQAAAAUwAAUwAAQUxQSMQBAAABgJptbyNJBfhSB4MvDR6kDga7hGnD6JI7WJ4jNncHwwcP34i04ZLlv4CIcOA2kiJVlnn3rvEJpIMpyoq5KgtDGDxaN4zdRr6x6eLQ2ce8MrWPR/kHx+hrk0vsW0mg9ZxDdi3JrK36UhAVguoCz0SNmdpljNuIIhtndLYGUSZobGx6UadvkvUmWXhLvMZAMjEwCXoYSjaGD/9fHkpGhv9eHEhWBulXw7lYI9n5z025z6+e/75CEADCnxdwAoH7a9sGQ5s/Ns0EhNnvrl9gsL8p4Cj8PgecrZG0/nkVgYK/y2PJfzfdFkutuaoWMOof64CrEU2RiB6PaDo+/mJoYObm8OSIhngaAh4pEsl0eOpMscHTpigFkLJCVMWIYkxhrmAegnkhTFuD9AmYvgvTx2LGAsyYBRlbMXMAzFwFM6eCzP0wc1TIXBoz54esTTBrKMhaD7MmhaydMWt8yF4EZM8EsrcD2YPC7JVB9vQge4+QPdJUmgz20TeUDqtbcmDSwDhVR7ZxhpRgRZc7Y1LEKp0ULCljFQLu2lIG2CclMa1nyoSpffxXtnmMvjaUlUfrhrHb/Ph3dXHo7CNhYIqyYq7KQumzEFZQOCB+AwAAEBQAnQEqVABUAD5hLJFGJCKhoSc2DEiADAljAM6oudGpowo0rwEx1h+oH/H/5b/vevB6Cf6nnW5SSSBJ/ZxoRz+RdqvOZDols4c/KorBo56acrL4FpyL5zeBF4OfzGb6VBlXmP51zkApcIPh5R69tvDOzVHPfbpQvo+lmyyxqrjQWr8KNYZAzg8c7FZ3xSlUgbkKbyMDm54mkLEctZDnTWDVomH3SrtXoAD+/W5Lry2oalytsGUhXa2NtsJAYu1HsgTeS/fqEVGulhovUj325U5JE5SYd0LREohWcGWlYs0aJco/AWiBvKLmPteEEC27H3gS7ajRCSNk7BursQokhQie3avoRqT0fGOLlS+d3mtDYRlkgABjOcmBhVGDUhBRiecRtL6qV4rc+OtUMsSy65PrOpKCJgI3f7rw5UH1PRhZTd7JXPvW7TFtStgnk9dWePBdRhXd5xMuRwTFgiN3DLOlrj45/vuTOCOYARCBUsCS0VqpB64h5Iu0ysoMkzIX0WCdrBRF2hegVS01Zt8MZlEG7+B+CXL0hr31R3qIbEoutgCIycbQoVgyTyDhAZuWhEaG/Gon41/xDjdzFn5XLMDSBrLxf5/j71IHzVpNXYepy0gp62zUNWrBgwSVHBZi48gQ9p3bprC1oaFut1xqqmnY2qlAk4tvNP4SPrXqOAARFUz05lPmBg6iJDQ8fMQu9esCE4JC20BYR65R/tuW5ByimqInVOttgAIhoQhdEI63abhxTzQ8F/cJOHP29vmgTv7KQM/JQ45hQy//6Zifwf2zBggGKeTTHdBJVSoJibKJn3Pg4vmll5shD75vbc3mcy9dLMAzlYNjXc8CI0XmX/uy6b8kdL+AnIaf0KnC46o3a5xjuYsnBSuryIzXZs09wUmHb56CVK2A7u+v2LENRCUTqVWu8TE8NrQoh+Bp50AWKSyke65VAHTupBBI1VIicYHVcyBTY4In+h6ixOwKDJ+QzJPv2tVy+peQhksWPMzoHJeh25WWN73Z+TJ9Gpz8x/+iWXAyBXg9jplMyd5vh9f15MCU88FughH1I+XT5JbpMQtZWnRFJ107m5E4BaRSExVjeo5KQqeJhcqWS5v7a5f5Qh1SiFnmYlqJSi0y9nBdAlnBtWGMZ+JRIFvId6Vzu68m1iZaF2i1SYTEWcBIFZciIQ6gst5OgAAAAAAA"
+                alt=""
+                aria-hidden="true"
+            >
+        </button>
+    </aside>
 
+    <script>
         const form = document.getElementById('proxy-form');
         const input = document.getElementById('proxy-input');
         const status = document.getElementById('status-text');
+        const container = document.querySelector('.container');
+        const browserTabs = document.getElementById('browser-tabs');
+        const tabList = document.getElementById('tab-list');
+        const newTabButton = document.getElementById('new-tab');
+        const aiChatPanel = document.getElementById('ai-chat-panel');
+        const aiChatFrame = document.getElementById('ai-chat-frame');
+        const openAiChatButton = document.getElementById('open-ai-chat');
+        const closeAiChatButton = document.getElementById('close-ai-chat');
+        const shareTabsCheckbox = document.getElementById('share-tabs');
+        const { ScramjetController } = $scramjetLoadController();
+        const scramjet = new ScramjetController({
+            files: {
+                wasm: '/scram/scramjet.wasm.wasm',
+                all: '/scram/scramjet.all.js',
+                sync: '/scram/scramjet.sync.js'
+            }
+        });
+        scramjet.init();
+
+        const connection = new BareMux.BareMuxConnection('/baremux/worker.js');
+        const tabs = [];
+        let nextTabId = 0;
+        let activeTabId = null;
+
+        function sendTabContext() {
+            const sharedTabs = shareTabsCheckbox.checked
+                ? tabs.flatMap((tab) => {
+                    const site = new URL(tab.url);
+                    if (site.protocol !== 'https:' && site.protocol !== 'http:') return [];
+                    return [{
+                        title: tab.title,
+                        site: site.origin,
+                        active: tab.id === activeTabId
+                    }];
+                })
+                : [];
+
+            aiChatFrame.contentWindow?.postMessage({
+                type: 'proxy-tabs:update',
+                tabs: sharedTabs
+            }, location.origin);
+        }
+
+        function renderTabs() {
+            browserTabs.hidden = tabs.length === 0;
+            tabList.replaceChildren();
+
+            for (const tab of tabs) {
+                const tabElement = document.createElement('div');
+                tabElement.className = `tab${tab.id === activeTabId ? ' active' : ''}`;
+
+                const selectButton = document.createElement('button');
+                selectButton.className = 'tab-select';
+                selectButton.type = 'button';
+                selectButton.textContent = tab.title;
+                selectButton.title = tab.title;
+                selectButton.addEventListener('click', () => selectTab(tab.id));
+
+                const closeButton = document.createElement('button');
+                closeButton.className = 'tab-close';
+                closeButton.type = 'button';
+                closeButton.textContent = '×';
+                closeButton.setAttribute('aria-label', `Close ${tab.title}`);
+                closeButton.addEventListener('click', () => closeTab(tab.id));
+
+                tabElement.append(selectButton, closeButton);
+                tabList.append(tabElement);
+                tab.frame.classList.toggle('active', tab.id === activeTabId);
+            }
+            sendTabContext();
+        }
+
+        function selectTab(id) {
+            activeTabId = id;
+            container.hidden = id !== null;
+            for (const tab of tabs) {
+                tab.frame.classList.toggle('active', tab.id === id);
+            }
+            renderTabs();
+        }
+
+        function closeTab(id) {
+            const index = tabs.findIndex((tab) => tab.id === id);
+            if (index === -1) return;
+
+            const [tab] = tabs.splice(index, 1);
+            tab.frame.remove();
+            if (activeTabId === id) {
+                selectTab(tabs[index - 1]?.id ?? tabs[index]?.id ?? null);
+            } else {
+                renderTabs();
+            }
+        }
+
+        newTabButton.addEventListener('click', () => {
+            input.value = '';
+            selectTab(null);
+            input.focus();
+        });
+
+        openAiChatButton.addEventListener('click', () => {
+            aiChatPanel.hidden = false;
+            openAiChatButton.setAttribute('aria-expanded', 'true');
+            sendTabContext();
+        });
+
+        closeAiChatButton.addEventListener('click', () => {
+            aiChatPanel.hidden = true;
+            openAiChatButton.setAttribute('aria-expanded', 'false');
+            openAiChatButton.focus();
+        });
+
+        shareTabsCheckbox.addEventListener('change', sendTabContext);
+        aiChatFrame.addEventListener('load', sendTabContext);
+
+        function resolveTarget(value) {
+            try {
+                return new URL(value).toString();
+            } catch {}
+
+            try {
+                const url = new URL(`https://${value}`);
+                if (url.hostname.includes('.')) return url.toString();
+            } catch {}
+
+            return `https://search.brave.com/search?q=${encodeURIComponent(value)}`;
+        }
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            let targetUrl = input.value.trim();
+            const target = input.value.trim();
 
-            if (!targetUrl) return;
+            if (!target) return;
 
-            status.textContent = "Connecting to theproxywhoise node network...";
-
-            if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
-                if (targetUrl.includes('.') && !targetUrl.includes(' ')) {
-                    targetUrl = 'https://' + targetUrl;
-                } else {
-                    targetUrl = 'https://google.com' + encodeURIComponent(targetUrl);
-                }
-            }
+            status.textContent = 'Connecting...';
+            status.style.color = '';
 
             try {
-                if ('serviceWorker' in navigator) {
-                    await navigator.serviceWorker.register('data:text/javascript;base64,' + btoa(`
-                        importScripts('https://jsdelivr.net');
-                        const sw = new UVServiceWorker();
-                        self.addEventListener('fetch', event => event.respondWith(sw.fetch(event)));
-                    `), {
-                        scope: __uv$config.prefix
-                    });
+                if (!('serviceWorker' in navigator)) {
+                    throw new Error('Service workers are unavailable in this browser.');
                 }
+                await navigator.serviceWorker.register('/sw.js');
 
-                status.textContent = "Bypassing protocols...";
-                window.location.href = __uv$config.prefix + __uv$config.encodeUrl(targetUrl);
+                const wispUrl = `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/wisp/`;
+                await connection.setTransport('/libcurl/index.mjs', [{ websocket: wispUrl }]);
+
+                const targetUrl = resolveTarget(target);
+                const frame = scramjet.createFrame();
+                frame.frame.classList.add('sj-frame');
+                document.body.appendChild(frame.frame);
+                frame.go(targetUrl);
+
+                const parsedTarget = new URL(targetUrl);
+                const title = (parsedTarget.hostname === 'search.brave.com' || parsedTarget.hostname === 'www.google.com')
+                    && parsedTarget.pathname === '/search'
+                    ? target
+                    : parsedTarget.hostname;
+                tabs.push({ id: nextTabId++, title, url: targetUrl, frame: frame.frame });
+                selectTab(tabs[tabs.length - 1].id);
+                status.textContent = 'Connected.';
 
             } catch (err) {
                 console.error(err);
-                status.style.color = "#ef4444";
-                status.textContent = "Error: Local file restrictions blocked ServiceWorker. Please run via a local or cloud web server.";
+                status.style.color = '#ef4444';
+                status.textContent = `Error: ${err.message}`;
             }
         });
     </script>
