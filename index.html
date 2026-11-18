@@ -3,11 +3,32 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="refresh" content="0; url=https://theproxywhosie.vercel.app/">
+  <meta name="theme-color" content="#0b0d19">
   <title>theproxywhoise</title>
-  <script>window.location.replace('https://theproxywhosie.vercel.app/');</script>
+  <style>
+    * { box-sizing: border-box; }
+    html, body, main, iframe { width: 100%; height: 100%; margin: 0; border: 0; }
+    body { overflow: hidden; background: #0b0d19; color: #f3f4f6; font: 16px system-ui, sans-serif; }
+    iframe { display: block; position: absolute; inset: 0; }
+    #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #0b0d19; z-index: 1; transition: opacity .25s ease; }
+    #loading.done { opacity: 0; pointer-events: none; }
+    .spinner { width: 44px; height: 44px; border: 4px solid #29304a; border-top-color: #6366f1; border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #fallback { position: fixed; left: 12px; bottom: 12px; z-index: 2; padding: 8px 12px; border-radius: 8px; background: #16192b; color: #f3f4f6; }
+    #fallback a { color: #a5b4fc; }
+  </style>
 </head>
 <body>
-  <p>Opening <a href="https://theproxywhosie.vercel.app/">theproxywhoise</a>…</p>
+  <main>
+    <iframe id="site" src="https://theproxywhosie.vercel.app/" title="theproxywhoise" allow="clipboard-read; clipboard-write; fullscreen" referrerpolicy="no-referrer"></iframe>
+  </main>
+  <div id="loading" aria-label="Loading theproxywhoise"><div class="spinner" role="status"></div></div>
+  <div id="fallback">Taking too long? <a href="https://theproxywhosie.vercel.app/">Open the site directly</a></div>
+  <script>
+    const frame = document.getElementById('site');
+    const loading = document.getElementById('loading');
+    frame.addEventListener('load', () => loading.classList.add('done'));
+    window.setTimeout(() => loading.classList.add('done'), 12000);
+  </script>
 </body>
 </html>
