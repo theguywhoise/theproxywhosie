@@ -1,0 +1,27 @@
+# Plain Node.js/Express app (no frontend framework), installed with npm.
+# There is no compile step: the build assembles the static site into `dist/`
+# (the files in `public/` plus the Scramjet, libcurl-transport and bare-mux
+# browser bundles that server.js otherwise serves from node_modules), so the
+# CDN serves them. The Express server in server.js runs as a Netlify Server
+# (see netlify/server/index.mjs) for the `/wisp/` WebSocket endpoint.
+[build]
+  command = """
+    rm -rf dist && mkdir -p dist && \
+    cp -R public/. dist/ && \
+    cp -R node_modules/@mercuryworkshop/scramjet/dist dist/scram && \
+    cp -R node_modules/@mercuryworkshop/libcurl-transport/dist dist/libcurl && \
+    cp -R node_modules/@mercuryworkshop/bare-mux/dist dist/baremux
+  """
+  publish = "dist"
+
+[build.environment]
+  # Netlify Server requires Node.js 24 or later.
+  NODE_VERSION = "24"
+
+# server.js sets these headers on every response; CDN-served static files
+# need them too.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cross-Origin-Opener-Policy = "same-origin"
+    Cross-Origin-Embedder-Policy = "require-corp"
